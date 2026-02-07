@@ -1,0 +1,17 @@
+# Build artifacts
+.next/
+.turbo/
+_next/
+__tmp__/
+dist/
+target/
+compiled/
+build/
+
+node_modules
+package-lock.json
+.env
+.env.local
+
+.vercel
+.git
