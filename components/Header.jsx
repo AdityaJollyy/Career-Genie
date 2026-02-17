@@ -25,6 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { checkUser } from "@/lib/checkUser";
 
 // Define the growth tools with their respective icons
 const GROWTH_TOOLS = [
@@ -45,7 +46,8 @@ const GROWTH_TOOLS = [
   },
 ];
 
-const Header = () => {
+const Header = async () => {
+  await checkUser();
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-backdrop-filter:bg-background/60">
       <nav className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
