@@ -1,7 +1,6 @@
 import { howItWorks } from "@/data/howItWorks";
-import React from "react";
 
-function HowItWorks() {
+export default function HowItWorks() {
   return (
     <section className="w-full py-12 md:py-24 bg-background">
       <div className="container mx-auto px-4 md:px-6">
@@ -34,5 +33,3 @@ function HowItWorks() {
     </section>
   );
 }
-
-export default HowItWorks;

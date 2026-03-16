@@ -25,7 +25,7 @@ model User {
 
   assessments        Assessment[]        
   resume             Resume?
-  coverLetter        CoverLetter[]
+  coverLetters       CoverLetter[]
 }
 
 model Assessment {

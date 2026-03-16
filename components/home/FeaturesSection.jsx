@@ -1,8 +1,7 @@
-import React from "react";
 import { Card, CardContent } from "../ui/card";
 import { features } from "@/data/features";
 
-function FeaturesSection() {
+export default function FeaturesSection() {
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 bg-background">
       <div className="container mx-auto px-4 md:px-6">
@@ -31,5 +30,3 @@ function FeaturesSection() {
     </section>
   );
 }
-
-export default FeaturesSection;

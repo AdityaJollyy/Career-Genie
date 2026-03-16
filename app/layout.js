@@ -1,9 +1,9 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import Header from "@/components/Header";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import HeaderServer from "@/components/HeaderServer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
             disableTransitionOnChange
           >
             {/* header */}
-            <Header />
+            <HeaderServer />
 
             <main className="min-h-screen">{children}</main>
 

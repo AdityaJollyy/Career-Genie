@@ -1,7 +1,6 @@
 import { stats } from "@/data/stats";
-import React from "react";
 
-function StatsSection() {
+export default function StatsSection() {
   return (
     <section className="w-full py-12 md:py-24 bg-muted/50">
       <div className="container mx-auto px-4 md:px-6">
@@ -20,5 +19,3 @@ function StatsSection() {
     </section>
   );
 }
-
-export default StatsSection;

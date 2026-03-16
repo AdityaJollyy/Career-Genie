@@ -1,17 +1,18 @@
 "use client";
 import Link from "next/link";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import Image from "next/image";
 import { Button } from "../ui/button";
 
-const HeroSection = () => {
+export default function HeroSection() {
   // Ref to the image element for scroll effect
   const imageRef = useRef(null);
 
   // Scroll effect to add a class when the user scrolls down
   useEffect(() => {
     const imageElement = imageRef.current;
+    if (!imageElement) return;
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
       const scrollThreshold = 100;
@@ -72,6 +73,4 @@ const HeroSection = () => {
       </div>
     </section>
   );
-};
-
-export default HeroSection;
+}
