@@ -25,10 +25,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { onboardingSchema } from "@/app/lib/schema";
+import { updateUser } from "@/actions/user";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import useFetch from "@/hooks/use-fetch";
 
 export default function OnboardingForm({ industries }) {
   const router = useRouter();
   const [selectedIndustry, setSelectedIndustry] = useState(null);
+
+  const {
+    loading: updateLoading,
+    fn: updateUserFn,
+    data: updateResult,
+  } = useFetch(updateUser);
 
   const {
     register,
@@ -47,7 +57,33 @@ export default function OnboardingForm({ industries }) {
     },
   });
 
-  const onSubmit = async (values) => {};
+  const onSubmit = async (values) => {
+    try {
+      const formattedIndustry = `${values.industry}-${values.subIndustry
+        .toLowerCase()
+        .replace(/ /g, "-")}`; // e.g., "tech-software-development"
+
+      console.log({
+        ...values,
+        industry: formattedIndustry,
+      });
+      await updateUserFn({
+        ...values,
+        industry: formattedIndustry,
+      });
+    } catch (error) {
+      console.error("Onboarding error:", error);
+    }
+  };
+
+  // Redirect to dashboard on successful profile update
+  useEffect(() => {
+    if (updateResult?.success && !updateLoading) {
+      toast.success("Profile completed successfully!");
+      router.push("/dashboard");
+      router.refresh();
+    }
+  }, [updateResult, updateLoading, router]);
 
   const watchIndustry = useWatch({
     control,
@@ -175,8 +211,15 @@ export default function OnboardingForm({ industries }) {
               )}
             </div>
 
-            <Button type="submit" className="w-full">
-              Complete Profile
+            <Button type="submit" className="w-full" disabled={updateLoading}>
+              {updateLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Complete Profile"
+              )}
             </Button>
           </form>
         </CardContent>

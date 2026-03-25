@@ -9,13 +9,16 @@ export const onboardingSchema = z.object({
     .string({ required_error: "Please select a specialization" })
     .min(1, "Please select a specialization"),
   bio: z.string().max(500).optional(),
-  experience: z.coerce
-    .number({
-      required_error: "Please enter your experience",
-      invalid_type_error: "Experience must be a number",
-    })
-    .min(0, "Experience must be at least 0 years")
-    .max(50, "Experience cannot exceed 50 years"),
+  experience: z
+    .string()
+    .min(1, "Please enter your experience")
+    .transform((val) => parseInt(val, 10))
+    .pipe(
+      z
+        .number()
+        .min(0, "Experience must be at least 0 years")
+        .max(50, "Experience cannot exceed 50 years"),
+    ),
   skills: z.string().transform((val) =>
     val
       ? val
