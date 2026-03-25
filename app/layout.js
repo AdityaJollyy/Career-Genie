@@ -20,7 +20,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider
-      afterSignOutUrl="/"
+      forceRedirectUrl="/"
       appearance={{
         theme: dark,
       }}
