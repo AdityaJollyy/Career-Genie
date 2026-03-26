@@ -31,7 +31,6 @@ export default function Home() {
 
       {/* CTA Section */}
       <CtaSection />
-      
     </>
   );
 }

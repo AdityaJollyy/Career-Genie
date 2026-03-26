@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { GoogleGenAI } from "@google/genai";
 
@@ -16,9 +16,9 @@ export const generateAIInsights = async (industry) => {
         { "role": "string", "min": number, "max": number, "median": number, "location": "string" }
       ],
       "growthRate": number,
-      "demandLevel": "High" | "Medium" | "Low",
+      "demandLevel": "HIGH" | "MEDIUM" | "LOW",
       "topSkills": ["skill1", "skill2"],
-      "marketOutlook": "Positive" | "Neutral" | "Negative",
+      "marketOutlook": "POSITIVE" | "NEUTRAL" | "NEGATIVE",
       "keyTrends": ["trend1", "trend2"],
       "recommendedSkills": ["skill1", "skill2"]
     }
@@ -30,7 +30,7 @@ export const generateAIInsights = async (industry) => {
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-lite-preview",
+    model: "gemini-2.5-flash-lite",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -47,7 +47,7 @@ export async function getIndustryInsights() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { clerkUserId: userId },
     include: {
       industryInsight: true,
@@ -60,7 +60,7 @@ export async function getIndustryInsights() {
   if (!user.industryInsight) {
     const insights = await generateAIInsights(user.industry);
 
-    const industryInsight = await db.industryInsight.create({
+    const industryInsight = await prisma.industryInsight.create({
       data: {
         industry: user.industry,
         ...insights,
