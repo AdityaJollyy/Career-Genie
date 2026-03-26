@@ -2,7 +2,6 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { success } from "zod";
 
 export async function updateUser(data) {
   const { userId } = await auth();

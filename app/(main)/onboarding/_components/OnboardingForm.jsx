@@ -63,10 +63,6 @@ export default function OnboardingForm({ industries }) {
         .toLowerCase()
         .replace(/ /g, "-")}`; // e.g., "tech-software-development"
 
-      console.log({
-        ...values,
-        industry: formattedIndustry,
-      });
       await updateUserFn({
         ...values,
         industry: formattedIndustry,
