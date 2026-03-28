@@ -30,7 +30,7 @@ export const generateAIInsights = async (industry) => {
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-3.1-flash-lite-preview",
     contents: prompt,
     config: {
       responseMimeType: "application/json",

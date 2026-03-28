@@ -25,6 +25,6 @@ export const onboardingSchema = z.object({
           .split(",")
           .map((skill) => skill.trim())
           .filter(Boolean)
-      : undefined,
+      : [],
   ),
 });
