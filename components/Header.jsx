@@ -39,7 +39,7 @@ const GROWTH_TOOLS = [
     icon: PenBox,
   },
   {
-    href: "/interview-prep",
+    href: "/interview",
     label: "Interview Prep",
     icon: GraduationCap,
   },

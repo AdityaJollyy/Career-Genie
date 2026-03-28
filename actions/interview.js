@@ -102,6 +102,10 @@ export async function saveQuizResult(questions, answers, score) {
       Focus on the knowledge gaps revealed by these wrong answers.
       Keep the response under 2 sentences and make it encouraging.
       Don't explicitly mention the mistakes, instead focus on what to learn/practice.
+      Provide the improvement tip in ONLY the following JSON format without any additional notes or explanations:
+      {
+        "improvementTip": "string"
+      }
     `;
 
     try {
@@ -113,8 +117,10 @@ export async function saveQuizResult(questions, answers, score) {
         },
       });
 
-      improvementTip = tipResult.text().trim();
-      console.log(improvementTip);
+      const tipText = tipResult.text;
+
+      const tipJson = JSON.parse(tipText);
+      improvementTip = tipJson.improvementTip;
     } catch (error) {
       console.error("Error generating improvement tip:", error);
       // Continue without improvement tip if generation fails
