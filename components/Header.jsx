@@ -29,12 +29,12 @@ import {
 // Define the growth tools with their respective icons
 const GROWTH_TOOLS = [
   {
-    href: "/resume-builder",
+    href: "/resume",
     label: "Build Resume",
     icon: FileText,
   },
   {
-    href: "/ai-cover-letter",
+    href: "/cover-letter",
     label: "Cover Letter",
     icon: PenBox,
   },

@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 // Define protected routes that require authentication
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
-  "/resume-builder(.*)",
+  "/resume(.*)",
   "/cover-letter(.*)",
-  "/interview-prep(.*)",
+  "/interview(.*)",
   "/onboarding(.*)",
 ]);
 
