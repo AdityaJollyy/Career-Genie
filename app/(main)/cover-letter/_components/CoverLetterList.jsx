@@ -6,7 +6,6 @@ import { Eye, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -54,9 +53,9 @@ export default function CoverLetterList({ coverLetters }) {
   return (
     <div className="space-y-4">
       {coverLetters.map((letter) => (
-        <Card key={letter.id} className="group relative ">
+        <Card key={letter.id}>
           <CardHeader>
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xl gradient-title">
                   {letter.jobTitle} at {letter.companyName}
@@ -84,8 +83,7 @@ export default function CoverLetterList({ coverLetters }) {
                       <AlertDialogTitle>Delete Cover Letter?</AlertDialogTitle>
                       <AlertDialogDescription>
                         This action cannot be undone. This will permanently
-                        delete your cover letter for {letter.jobTitle} at{" "}
-                        {letter.companyName}.
+                        delete your cover letter for {letter.jobTitle}.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -102,11 +100,6 @@ export default function CoverLetterList({ coverLetters }) {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-muted-foreground text-sm line-clamp-3">
-              {letter.jobDescription}
-            </div>
-          </CardContent>
         </Card>
       ))}
     </div>

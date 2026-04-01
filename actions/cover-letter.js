@@ -106,6 +106,36 @@ export async function getCoverLetter(id) {
   });
 }
 
+export async function updateCoverLetter(id, content) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const user = await prisma.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+
+  if (!user) throw new Error("User not found");
+
+  try {
+    const updated = await prisma.coverLetter.update({
+      where: {
+        id,
+        userId: user.id,
+      },
+      data: {
+        content,
+      },
+    });
+
+    revalidatePath("/cover-letter");
+    revalidatePath(`/cover-letter/${id}`);
+    return updated;
+  } catch (error) {
+    console.error("Error updating cover letter:", error);
+    throw new Error("Failed to update cover letter");
+  }
+}
+
 export async function deleteCoverLetter(id) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");

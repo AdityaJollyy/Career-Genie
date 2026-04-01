@@ -27,7 +27,11 @@ export default async function CoverLetterDetailPage({ params }) {
         </Link>
       </div>
 
-      <CoverLetterPreview content={coverLetter.content} />
+      <CoverLetterPreview
+        content={coverLetter.content}
+        id={coverLetter.id}
+        jobDescription={coverLetter.jobDescription}
+      />
     </div>
   );
 }
