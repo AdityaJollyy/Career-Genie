@@ -58,6 +58,15 @@ export async function getIndustryInsights() {
 
   // If no insights exist, generate them
   if (!user.industryInsight) {
+    // Double-check if another request already created it
+    const existingInsight = await prisma.industryInsight.findUnique({
+      where: { industry: user.industry },
+    });
+
+    if (existingInsight) {
+      return existingInsight;
+    }
+
     const insights = await generateAIInsights(user.industry);
 
     const industryInsight = await prisma.industryInsight.upsert({

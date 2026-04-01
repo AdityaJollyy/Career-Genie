@@ -141,7 +141,6 @@ export async function saveQuizResult(questions, answers, score) {
       },
     });
 
-    revalidatePath("/interview");
     return assessment;
   } catch (error) {
     console.error("Error saving quiz result:", error);
