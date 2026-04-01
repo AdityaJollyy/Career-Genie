@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   Download,
   Edit,
+  Import,
   Loader2,
   Monitor,
   Save,
@@ -17,11 +18,21 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { saveResume } from "@/actions/resume";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { saveResume, getResume } from "@/actions/resume";
 import { EntryForm } from "./EntryForm";
 import useFetch from "@/hooks/use-fetch";
 import { useUser } from "@clerk/nextjs";
-import { entriesToMarkdown } from "@/app/lib/helper";
+import { entriesToMarkdown, markdownToFormData } from "@/app/lib/helper";
 import { resumeSchema } from "@/app/lib/schema";
 import { useReactToPrint } from "react-to-print";
 
@@ -34,6 +45,9 @@ export default function ResumeBuilder({ initialContent }) {
   const { user } = useUser();
   const [resumeMode, setResumeMode] = useState("preview");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLikelyNonDesktop, setIsLikelyNonDesktop] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Print Setup
   const contentRef = useRef(null);
@@ -48,6 +62,7 @@ export default function ResumeBuilder({ initialContent }) {
     register,
     handleSubmit,
     getValues,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(resumeSchema),
@@ -110,6 +125,24 @@ export default function ResumeBuilder({ initialContent }) {
     }
   }, [saveResult, saveError, isSaving]);
 
+  useEffect(() => {
+    const detectNonDesktop = () => {
+      const isSmallScreen = window.matchMedia("(max-width: 1024px)").matches;
+      const isTouchFirstDevice =
+        window.matchMedia("(hover: none)").matches &&
+        window.matchMedia("(pointer: coarse)").matches;
+
+      setIsLikelyNonDesktop(isSmallScreen || isTouchFirstDevice);
+    };
+
+    detectNonDesktop();
+    window.addEventListener("resize", detectNonDesktop);
+
+    return () => {
+      window.removeEventListener("resize", detectNonDesktop);
+    };
+  }, []);
+
   const onSubmit = async () => {
     try {
       let contentToSave = previewContent;
@@ -149,6 +182,32 @@ export default function ResumeBuilder({ initialContent }) {
     }, 1500);
   };
 
+  const handleImportFromSaved = async () => {
+    setIsImporting(true);
+    try {
+      const resume = await getResume();
+      if (!resume || !resume.content) {
+        toast.error("No saved resume found");
+        return;
+      }
+
+      const formData = markdownToFormData(resume.content);
+      if (!formData) {
+        toast.error("Failed to parse saved resume");
+        return;
+      }
+
+      reset(formData);
+      toast.success("Resume imported successfully");
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Failed to import resume");
+    } finally {
+      setIsImporting(false);
+      setShowImportDialog(false);
+    }
+  };
+
   return (
     <div data-color-mode="light" className="space-y-4">
       <div className="flex flex-col md:flex-row justify-between items-center gap-2">
@@ -156,11 +215,7 @@ export default function ResumeBuilder({ initialContent }) {
           Resume Builder
         </h1>
         <div className="space-x-2 flex">
-          <Button
-            variant="destructive"
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSaving}
-          >
+          <Button variant="destructive" onClick={onSubmit} disabled={isSaving}>
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -189,6 +244,15 @@ export default function ResumeBuilder({ initialContent }) {
         </div>
       </div>
 
+      {isLikelyNonDesktop && (
+        <div className="flex p-3 gap-2 items-center border-2 border-yellow-600 text-yellow-600 rounded">
+          <AlertTriangle className="h-5 w-5" />
+          <span className="text-sm">
+            Downloading the PDF is currently supported only on desktop/laptop.
+          </span>
+        </div>
+      )}
+
       <Tabs
         value={activeTab}
         onValueChange={(value) => {
@@ -205,10 +269,32 @@ export default function ResumeBuilder({ initialContent }) {
         </TabsList>
 
         <TabsContent value="edit">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <form className="space-y-8">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowImportDialog(true)}
+              disabled={isImporting}
+              className="mt-1"
+            >
+              {isImporting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <Import className="h-4 w-4 mr-2" />
+                  Import from Saved
+                </>
+              )}
+            </Button>
+
             {/* Contact Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Contact Information</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Contact Information</h3>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-muted/50">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Email</label>
@@ -438,6 +524,24 @@ export default function ResumeBuilder({ initialContent }) {
           </div>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Import Saved Resume?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will replace your current form data with the saved resume.
+              Any unsaved changes in the form will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleImportFromSaved}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
