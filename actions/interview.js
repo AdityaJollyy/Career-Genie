@@ -1,5 +1,6 @@
 "use server";
 
+import { checkUser } from "@/lib/checkUser";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { GoogleGenAI } from "@google/genai";
@@ -18,6 +19,7 @@ export async function generateQuiz() {
     },
   });
 
+  if (!user) user = await checkUser();
   if (!user) throw new Error("User not found");
 
   const prompt = `
@@ -70,6 +72,7 @@ export async function saveQuizResult(questions, answers, score) {
     where: { clerkUserId: userId },
   });
 
+  if (!user) user = await checkUser();
   if (!user) throw new Error("User not found");
 
   const questionResults = questions.map((q, index) => ({
@@ -138,6 +141,7 @@ export async function saveQuizResult(questions, answers, score) {
       },
     });
 
+    revalidatePath("/interview");
     return assessment;
   } catch (error) {
     console.error("Error saving quiz result:", error);
@@ -153,6 +157,7 @@ export async function getAssessments() {
     where: { clerkUserId: userId },
   });
 
+  if (!user) user = await checkUser();
   if (!user) throw new Error("User not found");
 
   try {

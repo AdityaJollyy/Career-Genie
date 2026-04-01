@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateAIInsights } from "./dashboard";
+import { checkUser } from "@/lib/checkUser";
 
 export async function updateUser(data) {
   const { userId } = await auth();
@@ -12,23 +13,28 @@ export async function updateUser(data) {
     where: { clerkUserId: userId },
   });
 
+  if (!user) user = await checkUser();
   if (!user) throw new Error("User not found");
 
   try {
+    // Generate insights BEFORE opening the database transaction
+    // This prevents the transaction from timing out if the AI takes > 5 seconds
+    let industryInsight = await prisma.industryInsight.findUnique({
+      where: {
+        industry: data.industry,
+      },
+    });
+
+    let insights = null;
+    if (!industryInsight) {
+      insights = await generateAIInsights(data.industry);
+    }
+
     // Start a transaction to handle both operations
     const result = await prisma.$transaction(
       async (tx) => {
-        // First check if industry exists
-        let industryInsight = await tx.industryInsight.findUnique({
-          where: {
-            industry: data.industry,
-          },
-        });
-
-        // If no insights exist, generate them
-        if (!industryInsight) {
-          const insights = await generateAIInsights(data.industry);
-
+        // If no insights exist, use the generated ones
+        if (!industryInsight && insights) {
           // Upsert prevents duplicate rows when concurrent requests hit the same industry.
           industryInsight = await tx.industryInsight.upsert({
             where: { industry: data.industry },
@@ -57,7 +63,7 @@ export async function updateUser(data) {
         return { updatedUser, industryInsight };
       },
       {
-        timeout: 10000, // default: 5000. Increased timeout for potentially long AI generation
+        timeout: 10000,
       },
     );
 
@@ -74,16 +80,10 @@ export async function getUserOnboardingStatus() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await prisma.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
-
   try {
     // Query the database to find a user with the given Clerk user ID
     // findUnique() returns a single record using a unique field
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: {
         // Searching the user table using the Clerk authentication ID
         clerkUserId: userId,
@@ -94,6 +94,12 @@ export async function getUserOnboardingStatus() {
         industry: true,
       },
     });
+
+    // If the user doesn't exist in the DB yet, it means the layout's
+    // checkUser() is still running. We call checkUser() here to ensure they are created.
+    if (!user) {
+      user = await checkUser();
+    }
 
     // 1. Determine if the user has completed onboarding
     // 2. ? Access industry only if user exists.

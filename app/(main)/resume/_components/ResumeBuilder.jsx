@@ -163,7 +163,47 @@ export default function ResumeBuilder({ initialContent }) {
     }
   };
 
+  const onInvalid = (errors) => {
+    const errorMessages = [];
+
+    if (errors.contactInfo?.email) {
+      errorMessages.push("Email");
+    }
+    if (errors.summary) {
+      errorMessages.push("Professional Summary");
+    }
+    if (errors.skills) {
+      errorMessages.push("Skills");
+    }
+    if (errors.experience) {
+      errorMessages.push("Work Experience");
+    }
+    if (errors.education) {
+      errorMessages.push("Education");
+    }
+    if (errors.projects) {
+      errorMessages.push("Projects");
+    }
+
+    if (errorMessages.length > 0) {
+      toast.error(
+        `Please fix the following required fields: ${errorMessages.join(", ")}`,
+      );
+    }
+  };
+
   const handleDownloadPDF = () => {
+    // Check if there's content to download
+    const contentToDownload =
+      activeTab === "edit" ? generateMarkdownFromForm() : previewContent;
+
+    if (!contentToDownload || contentToDownload.trim() === "") {
+      toast.error(
+        "No resume content to download. Please fill in the form first.",
+      );
+      return;
+    }
+
     setIsGenerating(true); // Turn on the loader immediately
 
     toast.info(
@@ -172,7 +212,7 @@ export default function ResumeBuilder({ initialContent }) {
     );
 
     if (activeTab === "edit") {
-      setPreviewContent(generateMarkdownFromForm());
+      setPreviewContent(contentToDownload);
     }
 
     // Wait 1.5 seconds so they can read the toast and see the loader,
@@ -215,7 +255,11 @@ export default function ResumeBuilder({ initialContent }) {
           Resume Builder
         </h1>
         <div className="space-x-2 flex">
-          <Button variant="destructive" onClick={onSubmit} disabled={isSaving}>
+          <Button
+            variant="destructive"
+            onClick={handleSubmit(onSubmit, onInvalid)}
+            disabled={isSaving}
+          >
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -499,31 +543,31 @@ export default function ResumeBuilder({ initialContent }) {
               preview={resumeMode}
             />
           </div>
-
-          {/* Hidden PDF container strictly for react-to-print */}
-          <div className="hidden print:block">
-            <div
-              ref={contentRef}
-              style={{
-                padding: "20px",
-                backgroundColor: "white",
-                printColorAdjust: "exact",
-                WebkitPrintColorAdjust: "exact",
-              }}
-            >
-              <div data-color-mode="light">
-                <MDEditor.Markdown
-                  source={previewContent}
-                  style={{
-                    background: "white",
-                    color: "black",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
         </TabsContent>
       </Tabs>
+
+      {/* Hidden PDF container - placed outside Tabs so contentRef is always mounted */}
+      <div className="hidden print:block">
+        <div
+          ref={contentRef}
+          style={{
+            padding: "20px",
+            backgroundColor: "white",
+            printColorAdjust: "exact",
+            WebkitPrintColorAdjust: "exact",
+          }}
+        >
+          <div data-color-mode="light">
+            <MDEditor.Markdown
+              source={previewContent}
+              style={{
+                background: "white",
+                color: "black",
+              }}
+            />
+          </div>
+        </div>
+      </div>
 
       <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
         <AlertDialogContent>
