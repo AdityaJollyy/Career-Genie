@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -29,6 +29,22 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 export default function DashboardView({ insights }) {
+  // Responsive state for chart layout
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    // Check on mount
+    checkScreenSize();
+
+    // Listen for resize events
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
   // Transform salary data for the chart
   const salaryData = insights.salaryRanges.map((range) => ({
     name: range.role,
@@ -156,12 +172,35 @@ export default function DashboardView({ insights }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-100">
+          <div
+            className="w-full"
+            style={{
+              height: isMobile ? `${salaryData.length * 80}px` : "400px",
+            }}
+          >
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salaryData}>
+              <BarChart
+                data={salaryData}
+                layout={isMobile ? "vertical" : "horizontal"}
+                margin={isMobile ? { left: 20, right: 20 } : undefined}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                {isMobile ? (
+                  <>
+                    <XAxis type="number" />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={100}
+                      tick={{ fontSize: 12 }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                  </>
+                )}
                 <Tooltip
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
