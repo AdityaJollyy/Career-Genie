@@ -60,8 +60,10 @@ export async function getIndustryInsights() {
   if (!user.industryInsight) {
     const insights = await generateAIInsights(user.industry);
 
-    const industryInsight = await prisma.industryInsight.create({
-      data: {
+    const industryInsight = await prisma.industryInsight.upsert({
+      where: { industry: user.industry },
+      update: {},
+      create: {
         industry: user.industry,
         ...insights,
         nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),

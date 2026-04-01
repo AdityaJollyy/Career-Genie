@@ -26,11 +26,14 @@ export async function updateUser(data) {
         });
 
         // If no insights exist, generate them
-        if (!user.industryInsight) {
+        if (!industryInsight) {
           const insights = await generateAIInsights(data.industry);
 
-          industryInsight = await prisma.industryInsight.create({
-            data: {
+          // Upsert prevents duplicate rows when concurrent requests hit the same industry.
+          industryInsight = await tx.industryInsight.upsert({
+            where: { industry: data.industry },
+            update: {},
+            create: {
               industry: data.industry,
               ...insights,
               nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
