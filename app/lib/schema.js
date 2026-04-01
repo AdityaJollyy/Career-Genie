@@ -72,3 +72,32 @@ export const coverLetterSchema = z.object({
   jobTitle: z.string().min(1, "Job title is required"),
   jobDescription: z.string().min(1, "Job description is required"),
 });
+
+export const settingsSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  industry: z
+    .string({ required_error: "Please select an industry" })
+    .min(1, "Please select an industry"),
+  subIndustry: z
+    .string({ required_error: "Please select a specialization" })
+    .min(1, "Please select a specialization"),
+  experience: z
+    .string()
+    .min(1, "Please enter your experience")
+    .transform((val) => parseInt(val, 10))
+    .pipe(
+      z
+        .number()
+        .min(0, "Experience must be at least 0 years")
+        .max(50, "Experience cannot exceed 50 years"),
+    ),
+  skills: z.string().transform((val) =>
+    val
+      ? val
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(Boolean)
+      : [],
+  ),
+  bio: z.string().max(500).optional(),
+});

@@ -17,6 +17,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   PenBox,
+  Settings,
   StarsIcon,
 } from "lucide-react";
 import {
@@ -112,7 +113,15 @@ export default function Header() {
                 <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
               </ClerkLoading>
               <ClerkLoaded>
-                <UserButton />
+                <UserButton>
+                  <UserButton.MenuItems>
+                    <UserButton.Link
+                      label="Settings"
+                      labelIcon={<Settings className="h-4 w-4" />}
+                      href="/settings"
+                    />
+                  </UserButton.MenuItems>
+                </UserButton>
               </ClerkLoaded>
             </div>
           </SignedIn>

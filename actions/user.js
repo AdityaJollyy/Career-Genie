@@ -1,15 +1,78 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { generateAIInsights } from "./dashboard";
 import { checkUser } from "@/lib/checkUser";
+import { industries } from "@/data/industries";
+
+export async function getCurrentUser() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  try {
+    // Get user from database
+    let user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+
+    // If user doesn't exist yet, create them
+    if (!user) {
+      user = await checkUser();
+    }
+
+    if (!user) throw new Error("User not found");
+
+    // Get current Clerk user for latest name/image
+    const clerkUser = await currentUser();
+
+    // Parse industry into industry and subIndustry
+    let industry = "";
+    let subIndustry = "";
+    if (user.industry) {
+      const parts = user.industry.split("-");
+      if (parts.length >= 2) {
+        industry = parts[0];
+        // Get the stored subIndustry slug (e.g., "it-services")
+        const subIndustrySlug = parts.slice(1).join("-");
+
+        // Find the matching industry and subIndustry from the data
+        const industryData = industries.find((ind) => ind.id === industry);
+        if (industryData) {
+          // Find the subIndustry that matches when converted to slug format
+          const matchingSubIndustry = industryData.subIndustries.find(
+            (sub) => sub.toLowerCase().replace(/ /g, "-") === subIndustrySlug,
+          );
+          subIndustry = matchingSubIndustry || "";
+        }
+      }
+    }
+
+    return {
+      id: user.id,
+      name: clerkUser
+        ? `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim()
+        : user.name,
+      email: user.email,
+      imageUrl: clerkUser?.imageUrl || user.imageUrl,
+      industry,
+      subIndustry,
+      experience: user.experience,
+      bio: user.bio,
+      skills: user.skills ? user.skills.join(", ") : "",
+      isOnboarded: !!user.industry,
+    };
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    throw new Error("Failed to fetch user profile");
+  }
+}
 
 export async function updateUser(data) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { clerkUserId: userId },
   });
 
@@ -57,6 +120,7 @@ export async function updateUser(data) {
             experience: data.experience,
             bio: data.bio,
             skills: data.skills,
+            ...(data.name && { name: data.name }),
           },
         });
 
