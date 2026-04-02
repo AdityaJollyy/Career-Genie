@@ -16,7 +16,7 @@ export default async function CoverLetterDetailPage({ params }) {
   return (
     <div>
       <div className="flex flex-col md:flex-row gap-2 items-center justify-between mb-5">
-        <h1 className="text-6xl font-bold gradient-title">
+        <h1 className="text-5xl md:text-6xl font-bold gradient-title">
           {coverLetter.jobTitle} at {coverLetter.companyName}
         </h1>
         <Link href="/cover-letter">

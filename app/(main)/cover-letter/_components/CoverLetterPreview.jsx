@@ -111,13 +111,15 @@ const CoverLetterPreview = ({ content, id, jobDescription }) => {
         </Accordion>
       )}
 
-      <MDEditor
-        value={editedContent}
-        onChange={setEditedContent}
-        preview={isEditing ? "edit" : "preview"}
-        height={700}
-        hideToolbar={!isEditing}
-      />
+      <div className="overflow-x-auto">
+        <MDEditor
+          value={editedContent}
+          onChange={setEditedContent}
+          preview={isEditing ? "edit" : "preview"}
+          height={700}
+          hideToolbar={!isEditing}
+        />
+      </div>
     </div>
   );
 };
