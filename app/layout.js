@@ -43,7 +43,7 @@ export default function RootLayout({ children }) {
             {/* footer */}
             <footer className="bg-muted/50 py-6">
               <div className="container mx-auto px-4 text-center text-gray-200">
-                Made with ❤️ by Jolly
+                © {new Date().getFullYear()} Career Genie. All rights reserved.
               </div>
             </footer>
           </ThemeProvider>
