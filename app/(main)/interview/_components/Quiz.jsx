@@ -38,7 +38,7 @@ export default function Quiz() {
 
   useEffect(() => {
     if (quizData) {
-      setAnswers(new Array(quizData.length).fill(null));
+      setAnswers(new Array(quizData.length).fill(""));
     }
   }, [quizData]);
 
@@ -130,7 +130,7 @@ export default function Quiz() {
         <p className="text-lg font-medium">{question.question}</p>
         <RadioGroup
           onValueChange={handleAnswer}
-          value={answers[currentQuestion]}
+          value={answers[currentQuestion] ?? ""}
           className="space-y-2"
         >
           {question.options.map((option, index) => (
